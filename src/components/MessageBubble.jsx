@@ -184,7 +184,7 @@ function MessageBubble({
   onSpeak,
   onStopSpeak,
   ttsSupported,
-  speaking,
+  speakingMessageId,
   onToggleCorrection,
 }) {
   if (message.isLoading) {
@@ -201,6 +201,7 @@ function MessageBubble({
   }
 
   const hasCorrection = message.correctedText && isUser;
+  const isCurrentlySpeaking = speakingMessageId === message.id;
 
   return (
     <MessageContainer isUser={isUser}>
@@ -222,13 +223,13 @@ function MessageBubble({
         {!isUser && ttsSupported && (
           <>
             <SpeakButton
-              onClick={() => onSpeak(message.text)}
-              speaking={speaking}
+              onClick={() => onSpeak(message.text, message.id)}
+              speaking={isCurrentlySpeaking}
               title={UI_TEXT.BUTTON_TITLES.READ_ALOUD}
             >
               🔊
             </SpeakButton>
-            {speaking && (
+            {isCurrentlySpeaking && (
               <StopButton onClick={onStopSpeak} title="Stop reading">
                 ⏹️
               </StopButton>

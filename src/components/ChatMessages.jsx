@@ -31,7 +31,7 @@ const ChatMessages = forwardRef(
       onSpeak,
       onStopSpeak,
       ttsSupported,
-      speaking,
+      speakingMessageId,
       onToggleCorrection,
     },
     ref
@@ -59,7 +59,7 @@ const ChatMessages = forwardRef(
             onSpeak={onSpeak}
             onStopSpeak={onStopSpeak}
             ttsSupported={ttsSupported}
-            speaking={speaking}
+            speakingMessageId={speakingMessageId}
             onToggleCorrection={onToggleCorrection}
           />
         ))}
@@ -70,7 +70,7 @@ const ChatMessages = forwardRef(
             isUser={false}
             onStopSpeak={onStopSpeak}
             ttsSupported={false}
-            speaking={false}
+            speakingMessageId={null}
             onToggleCorrection={() => {}}
           />
         )}

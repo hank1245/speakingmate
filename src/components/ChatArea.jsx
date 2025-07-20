@@ -47,7 +47,7 @@ function ChatArea({
   isListening,
   speechSupported,
   ttsSupported,
-  speaking,
+  speakingMessageId,
   onToggleFavorite,
   isFavorite,
   onToggleCorrection,
@@ -88,7 +88,7 @@ function ChatArea({
         onSpeak={onSpeak}
         onStopSpeak={onStopSpeak}
         ttsSupported={ttsSupported}
-        speaking={speaking}
+        speakingMessageId={speakingMessageId}
         onToggleCorrection={onToggleCorrection}
       />
 

@@ -18,9 +18,10 @@ function App() {
   const [currentView, setCurrentView] = useState("chat"); // "chat" or "report"
   const [suggestion, setSuggestion] = useState("");
   const [isGettingHelp, setIsGettingHelp] = useState(false);
+  const [speakingMessageId, setSpeakingMessageId] = useState(null);
 
   const {
-    speak,
+    speak: speechSpeak,
     stop: stopSpeak,
     speaking,
     isSupported: ttsSupported,
@@ -50,7 +51,22 @@ function App() {
     toggleMessageCorrection,
   } = useChat(CHAT_CONTACTS);
 
-  // Handle speech recognition transcript - removed automatic input setting
+  const speak = (text, messageId) => {
+    setSpeakingMessageId(messageId);
+    speechSpeak(text);
+  };
+
+  const handleStopSpeak = () => {
+    setSpeakingMessageId(null);
+    stopSpeak();
+  };
+
+  // Reset speakingMessageId when speech ends naturally
+  useEffect(() => {
+    if (!speaking) {
+      setSpeakingMessageId(null);
+    }
+  }, [speaking]);
 
   // Handle speech recognition errors
   useEffect(() => {
@@ -66,7 +82,10 @@ function App() {
 
       // Process the transcript when stopping - now uses grammar correction
       if (transcript && transcript.trim() && currentChatId) {
-        handleSpeechMessage(transcript.trim(), ttsSupported ? speak : null);
+        handleSpeechMessage(
+          transcript.trim(),
+          ttsSupported ? (text) => speak(text) : null
+        );
         // Clear the transcript after processing
         resetTranscript();
       }
@@ -133,11 +152,11 @@ function App() {
           onCancelClick={handleCancelClick}
           onHelpClick={handleHelpClick}
           onSpeak={speak}
-          onStopSpeak={stopSpeak}
+          onStopSpeak={handleStopSpeak}
           isListening={isListening}
           speechSupported={speechSupported}
           ttsSupported={ttsSupported}
-          speaking={speaking}
+          speakingMessageId={speakingMessageId}
           onToggleFavorite={handleToggleFavorite}
           isFavorite={currentContact ? isFavorite(currentContact.id) : false}
           onToggleCorrection={toggleMessageCorrection}

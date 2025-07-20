@@ -95,6 +95,98 @@ Guidelines:
   }
 };
 
+export const getSuggestionForContext = async (
+  conversationHistory = [],
+  personalityPrompt = ""
+) => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file."
+    );
+  }
+
+  // Build conversation context with personality
+  const systemContent = `You are a helpful English conversation partner${
+    personalityPrompt ? ` with this background: ${personalityPrompt}` : ""
+  }. 
+
+Based on the conversation history, suggest a natural and contextually appropriate response that the user could say to continue the conversation. 
+
+Guidelines:
+- Provide only ONE suggested response
+- Make it conversational and natural
+- Keep it shorter than 100 characters
+- Match the user's language proficiency level
+- Don't suggest questions if the assistant just asked a question
+- Suggest responses that would naturally continue the conversation flow
+- Make the suggestion relevant to the conversation topic
+
+Return ONLY the suggested response text without any explanations or formatting.`;
+
+  const messages = [
+    {
+      role: "system",
+      content: systemContent,
+    },
+    ...conversationHistory.map((msg) => ({
+      role: msg.isUser ? "user" : "assistant",
+      content: msg.text,
+    })),
+  ];
+
+  const requestBody = {
+    model: "gpt-4o-mini",
+    messages: messages,
+    max_tokens: 50,
+    temperature: 0.8,
+    presence_penalty: 0.2,
+    frequency_penalty: 0.2,
+  };
+
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI Suggestion Error:", errorData);
+
+      if (response.status === 401) {
+        throw new Error("Invalid API key. Please check your OpenAI API key.");
+      } else if (response.status === 429) {
+        throw new Error("Rate limit exceeded. Please try again in a moment.");
+      } else if (response.status === 500) {
+        throw new Error(
+          "OpenAI service is temporarily unavailable. Please try again."
+        );
+      } else {
+        throw new Error(
+          `OpenAI API error: ${errorData.error?.message || "Unknown error"}`
+        );
+      }
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error("No suggestion received from OpenAI");
+    }
+
+    return data.choices[0].message.content.trim();
+  } catch (error) {
+    console.error("Error getting suggestion from OpenAI API:", error);
+    throw error;
+  }
+};
+
 export const correctGrammar = async (text) => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 

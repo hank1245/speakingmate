@@ -13,12 +13,29 @@ const ChatContainer = styled.div`
   background: ${colors.background.chat};
 `;
 
+const SuggestionContainer = styled.div`
+  display: ${props => props.show ? 'block' : 'none'};
+  padding: 15px 20px;
+  background: ${colors.background.input};
+  border-top: 1px solid ${colors.border};
+  color: ${colors.text.muted};
+  font-style: italic;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease-in;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
 function ChatArea({
   currentContact,
   messages,
   isLoading,
   onMicClick,
   onCancelClick,
+  onHelpClick,
   onSpeak,
   isListening,
   speechSupported,
@@ -27,6 +44,8 @@ function ChatArea({
   onToggleFavorite,
   isFavorite,
   onToggleCorrection,
+  suggestion,
+  isGettingHelp,
 }) {
   const chatContainerRef = useRef(null);
 
@@ -65,12 +84,18 @@ function ChatArea({
         onToggleCorrection={onToggleCorrection}
       />
 
+      <SuggestionContainer show={suggestion}>
+        {suggestion}
+      </SuggestionContainer>
+
       <ChatInput
         onMicClick={onMicClick}
         onCancelClick={onCancelClick}
+        onHelpClick={onHelpClick}
         isLoading={isLoading}
         isListening={isListening}
         speechSupported={speechSupported}
+        isGettingHelp={isGettingHelp}
       />
     </ChatContainer>
   );

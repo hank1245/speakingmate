@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { colors } from "./styles/common";
 import { CHAT_CONTACTS, ERROR_MESSAGES } from "./constants";
 import { useSpeechSynthesis, useSpeechRecognition, useChat } from "./hooks";
 import { Sidebar, ChatArea } from "./components";
+import { getSuggestionForContext } from "./services/openai";
 
 const AppContainer = styled.div`
   display: flex;
@@ -13,6 +14,9 @@ const AppContainer = styled.div`
 `;
 
 function App() {
+  const [suggestion, setSuggestion] = useState("");
+  const [isGettingHelp, setIsGettingHelp] = useState(false);
+  
   const { speak, speaking, isSupported: ttsSupported } = useSpeechSynthesis();
   const {
     isListening,
@@ -79,6 +83,28 @@ function App() {
     }
   };
 
+  const handleHelpClick = async () => {
+    if (!currentChatId || !currentContact) {
+      return;
+    }
+
+    setIsGettingHelp(true);
+    setSuggestion("");
+
+    try {
+      const suggestionText = await getSuggestionForContext(
+        currentMessages,
+        currentContact.personality
+      );
+      setSuggestion(`example: ${suggestionText}`);
+    } catch (error) {
+      console.error("Error getting suggestion:", error);
+      setSuggestion("Sorry, couldn't get a suggestion right now.");
+    } finally {
+      setIsGettingHelp(false);
+    }
+  };
+
   return (
     <AppContainer>
       <Sidebar
@@ -95,6 +121,7 @@ function App() {
         isLoading={isLoading}
         onMicClick={handleMicClick}
         onCancelClick={handleCancelClick}
+        onHelpClick={handleHelpClick}
         onSpeak={speak}
         isListening={isListening}
         speechSupported={speechSupported}
@@ -103,6 +130,8 @@ function App() {
         onToggleFavorite={handleToggleFavorite}
         isFavorite={currentContact ? isFavorite(currentContact.id) : false}
         onToggleCorrection={toggleMessageCorrection}
+        suggestion={suggestion}
+        isGettingHelp={isGettingHelp}
       />
     </AppContainer>
   );

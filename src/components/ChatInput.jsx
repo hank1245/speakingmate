@@ -36,12 +36,34 @@ const CancelButton = styled(CircularButton)`
   }
 `;
 
+const HelpButton = styled(CircularButton)`
+  background: ${colors.background.hover};
+  color: ${colors.text.muted};
+  width: 45px;
+  height: 45px;
+  font-size: 20px;
+  border: 2px solid ${colors.border};
+
+  &:hover:not(:disabled) {
+    background: ${colors.background.active};
+    color: ${colors.text.primary};
+    border-color: ${colors.text.muted};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 function ChatInput({
   onMicClick,
   onCancelClick,
+  onHelpClick,
   isLoading,
   isListening,
   speechSupported,
+  isGettingHelp,
 }) {
   return (
     <InputContainer>
@@ -67,6 +89,14 @@ function ChatInput({
       >
         {isListening ? "🔴" : "🎤"}
       </MicButton>
+
+      <HelpButton
+        onClick={onHelpClick}
+        title="Get answer suggestion"
+        disabled={isLoading || isListening || isGettingHelp}
+      >
+        {isGettingHelp ? "⏳" : "💡"}
+      </HelpButton>
     </InputContainer>
   );
 }

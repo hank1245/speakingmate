@@ -1,6 +1,8 @@
+import { useState } from "react";
 import styled from "styled-components";
 import { colors } from "../styles/common";
 import { UI_TEXT } from "../constants/strings";
+import CharacterCreationModal from "./CharacterCreationModal";
 
 const SidebarContainer = styled.div`
   width: 320px;
@@ -37,7 +39,9 @@ const ContactsList = styled.div`
   padding: 10px 0;
 `;
 
-const ContactItem = styled.div`
+const ContactItem = styled.div.withConfig({
+  shouldForwardProp: (prop) => prop !== "active",
+})`
   display: flex;
   align-items: center;
   padding: 12px 20px;
@@ -89,7 +93,63 @@ const ContactItem = styled.div`
   }
 `;
 
-function Sidebar({ contacts, currentChatId, onContactSelect, getLastMessage }) {
+const AddCharacterButton = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 2px dashed ${colors.border};
+  margin: 10px;
+  border-radius: 8px;
+
+  &:hover {
+    background: ${colors.background.hover};
+    border-color: ${colors.primary};
+  }
+
+  .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-right: 12px;
+    background: transparent;
+    color: ${colors.text.muted};
+  }
+
+  .text {
+    color: ${colors.text.secondary};
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  &:hover .icon {
+    color: ${colors.primary};
+  }
+
+  &:hover .text {
+    color: ${colors.text.primary};
+  }
+`;
+
+function Sidebar({
+  contacts,
+  currentChatId,
+  onContactSelect,
+  getLastMessage,
+  onCreateCharacter,
+}) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleCreateCharacter = (newCharacter) => {
+    onCreateCharacter(newCharacter);
+    setIsModalOpen(false);
+  };
+
   return (
     <SidebarContainer>
       <SidebarHeader>
@@ -112,7 +172,18 @@ function Sidebar({ contacts, currentChatId, onContactSelect, getLastMessage }) {
             </div>
           </ContactItem>
         ))}
+
+        <AddCharacterButton onClick={() => setIsModalOpen(true)}>
+          <div className="icon">+</div>
+          <div className="text">새 캐릭터 추가</div>
+        </AddCharacterButton>
       </ContactsList>
+
+      <CharacterCreationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreateCharacter={handleCreateCharacter}
+      />
     </SidebarContainer>
   );
 }

@@ -1,3 +1,3 @@
-export { default as useSpeechSynthesis } from "./useSpeechSynthesis";
-export { default as useSpeechRecognition } from "./useSpeechRecognition";
+export { useSpeechSynthesis } from "./useSpeechSynthesis";
+export { useSpeechRecognition } from "./useSpeechRecognition";
 export { useChat } from "./useChat";

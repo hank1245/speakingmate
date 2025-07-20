@@ -2,19 +2,26 @@ import { useState, useEffect } from "react";
 import { STORAGE_KEYS, ERROR_MESSAGES, UI_TEXT } from "../constants/strings";
 import { sendMessageToOpenAI } from "../services/openai";
 
-export function useChat(contacts) {
+export function useChat(initialContacts) {
   const [currentChatId, setCurrentChatId] = useState(null);
   const [allChats, setAllChats] = useState({});
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [contacts, setContacts] = useState(initialContacts);
 
-  // Load all conversation histories from localStorage on mount
+  // Load all conversation histories and custom contacts from localStorage on mount
   useEffect(() => {
     const savedChats = localStorage.getItem(STORAGE_KEYS.ALL_CHAT_MESSAGES);
     if (savedChats) {
       setAllChats(JSON.parse(savedChats));
     }
-  }, []);
+
+    const savedContacts = localStorage.getItem(STORAGE_KEYS.CUSTOM_CONTACTS);
+    if (savedContacts) {
+      const customContacts = JSON.parse(savedContacts);
+      setContacts([...initialContacts, ...customContacts]);
+    }
+  }, [initialContacts]);
 
   // Save all chats to localStorage whenever allChats change
   useEffect(() => {
@@ -100,6 +107,20 @@ export function useChat(contacts) {
       : lastMessage.text;
   };
 
+  const handleCreateCharacter = (newCharacter) => {
+    const updatedContacts = [...contacts, newCharacter];
+    setContacts(updatedContacts);
+
+    // Save custom contacts to localStorage
+    const customContacts = updatedContacts.filter(
+      (contact) => !initialContacts.find((initial) => initial.id === contact.id)
+    );
+    localStorage.setItem(
+      STORAGE_KEYS.CUSTOM_CONTACTS,
+      JSON.stringify(customContacts)
+    );
+  };
+
   const currentContact = contacts.find((c) => c.id === currentChatId);
   const currentMessages = getCurrentMessages();
 
@@ -110,9 +131,11 @@ export function useChat(contacts) {
     allChats,
     inputText,
     isLoading,
+    contacts,
     setInputText,
     handleSendMessage,
     handleContactSelect,
     getLastMessage,
+    handleCreateCharacter,
   };
 }

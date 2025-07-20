@@ -30,10 +30,12 @@ function App() {
     currentMessages,
     inputText,
     isLoading,
+    contacts,
     setInputText,
     handleSendMessage,
     handleContactSelect,
     getLastMessage,
+    handleCreateCharacter,
   } = useChat(CHAT_CONTACTS);
 
   // Handle speech recognition transcript
@@ -87,10 +89,11 @@ function App() {
   return (
     <AppContainer>
       <Sidebar
-        contacts={CHAT_CONTACTS}
+        contacts={contacts}
         currentChatId={currentChatId}
         onContactSelect={handleContactSelect}
         getLastMessage={getLastMessage}
+        onCreateCharacter={handleCreateCharacter}
       />
 
       <ChatArea

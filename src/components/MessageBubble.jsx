@@ -5,18 +5,16 @@ import { UI_TEXT } from "../constants/strings";
 const MessageContainer = styled.div`
   display: flex;
   align-items: flex-end;
-  gap: 8px;
   margin: 10px 0;
+  position: relative;
 
   ${(props) =>
     props.isUser
       ? `
     justify-content: flex-end;
-    flex-direction: row-reverse;
   `
       : `
     justify-content: flex-start;
-    flex-direction: row;
   `}
 `;
 
@@ -42,6 +40,10 @@ const BubbleContainer = styled.div`
 `;
 
 const CorrectionButton = styled.button`
+  position: absolute;
+  top: 50%;
+  left: -36px;
+  transform: translateY(-50%);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -56,15 +58,16 @@ const CorrectionButton = styled.button`
   opacity: 0.7;
   transition: all 0.2s ease;
   color: ${(props) => (props.isShowingCorrected ? colors.success : "#ff9800")};
+  z-index: 10;
 
   &:hover {
     opacity: 1;
     background: rgba(255, 255, 255, 0.1);
-    transform: scale(1.1);
+    transform: translateY(-50%) scale(1.1);
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: translateY(-50%) scale(0.95);
   }
 `;
 
@@ -145,21 +148,20 @@ function MessageBubble({
 
   return (
     <MessageContainer isUser={isUser}>
-      {hasCorrection && (
-        <CorrectionButton
-          onClick={() => onToggleCorrection(message.id)}
-          isShowingCorrected={message.isShowingCorrected}
-          title={
-            message.isShowingCorrected
-              ? "Show original message"
-              : "Show grammar correction"
-          }
-        >
-          {message.isShowingCorrected ? "↩️" : "⚠️"}
-        </CorrectionButton>
-      )}
-
       <BubbleContainer isUser={isUser}>
+        {hasCorrection && (
+          <CorrectionButton
+            onClick={() => onToggleCorrection(message.id)}
+            isShowingCorrected={message.isShowingCorrected}
+            title={
+              message.isShowingCorrected
+                ? "Show original message"
+                : "Show grammar correction"
+            }
+          >
+            {message.isShowingCorrected ? "↩️" : "⚠️"}
+          </CorrectionButton>
+        )}
         {message.text}
         {!isUser && ttsSupported && (
           <SpeakButton

@@ -5,6 +5,7 @@ import { CHAT_CONTACTS, ERROR_MESSAGES } from "./constants";
 import { useSpeechSynthesis, useSpeechRecognition, useChat } from "./hooks";
 import { Sidebar, ChatArea } from "./components";
 import { getSuggestionForContext } from "./services/openai";
+import ReportPage from "./components/ReportPage";
 
 const AppContainer = styled.div`
   display: flex;
@@ -14,6 +15,7 @@ const AppContainer = styled.div`
 `;
 
 function App() {
+  const [currentView, setCurrentView] = useState("chat"); // "chat" or "report"
   const [suggestion, setSuggestion] = useState("");
   const [isGettingHelp, setIsGettingHelp] = useState(false);
   
@@ -113,26 +115,32 @@ function App() {
         getLastMessage={getLastMessage}
         onCreateCharacter={handleCreateCharacter}
         organizedContacts={organizedContacts}
+        currentView={currentView}
+        onViewChange={setCurrentView}
       />
 
-      <ChatArea
-        currentContact={currentContact}
-        messages={currentMessages}
-        isLoading={isLoading}
-        onMicClick={handleMicClick}
-        onCancelClick={handleCancelClick}
-        onHelpClick={handleHelpClick}
-        onSpeak={speak}
-        isListening={isListening}
-        speechSupported={speechSupported}
-        ttsSupported={ttsSupported}
-        speaking={speaking}
-        onToggleFavorite={handleToggleFavorite}
-        isFavorite={currentContact ? isFavorite(currentContact.id) : false}
-        onToggleCorrection={toggleMessageCorrection}
-        suggestion={suggestion}
-        isGettingHelp={isGettingHelp}
-      />
+      {currentView === "chat" ? (
+        <ChatArea
+          currentContact={currentContact}
+          messages={currentMessages}
+          isLoading={isLoading}
+          onMicClick={handleMicClick}
+          onCancelClick={handleCancelClick}
+          onHelpClick={handleHelpClick}
+          onSpeak={speak}
+          isListening={isListening}
+          speechSupported={speechSupported}
+          ttsSupported={ttsSupported}
+          speaking={speaking}
+          onToggleFavorite={handleToggleFavorite}
+          isFavorite={currentContact ? isFavorite(currentContact.id) : false}
+          onToggleCorrection={toggleMessageCorrection}
+          suggestion={suggestion}
+          isGettingHelp={isGettingHelp}
+        />
+      ) : (
+        <ReportPage />
+      )}
     </AppContainer>
   );
 }

@@ -155,12 +155,39 @@ const AddCharacterButton = styled.div`
   }
 `;
 
+const ViewSwitcher = styled.div`
+  padding: 20px;
+  border-top: 1px solid ${colors.border};
+  display: flex;
+  gap: 10px;
+`;
+
+const ViewButton = styled.button`
+  flex: 1;
+  padding: 12px;
+  border: 1px solid ${colors.border};
+  background: ${props => props.active ? colors.primary : colors.background.input};
+  color: ${props => props.active ? colors.text.primary : colors.text.secondary};
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.active ? colors.primary : colors.background.hover};
+    border-color: ${colors.primary};
+  }
+`;
+
 function Sidebar({
   currentChatId,
   onContactSelect,
   getLastMessage,
   onCreateCharacter,
   organizedContacts,
+  currentView,
+  onViewChange,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -221,11 +248,28 @@ function Sidebar({
           </>
         )}
 
-        <AddCharacterButton onClick={() => setIsModalOpen(true)}>
-          <div className="icon">+</div>
-          <div className="text">새 캐릭터 추가</div>
-        </AddCharacterButton>
+        {currentView === "chat" && (
+          <AddCharacterButton onClick={() => setIsModalOpen(true)}>
+            <div className="icon">+</div>
+            <div className="text">새 캐릭터 추가</div>
+          </AddCharacterButton>
+        )}
       </ContactsList>
+
+      <ViewSwitcher>
+        <ViewButton 
+          active={currentView === "chat"} 
+          onClick={() => onViewChange("chat")}
+        >
+          💬 채팅
+        </ViewButton>
+        <ViewButton 
+          active={currentView === "report"} 
+          onClick={() => onViewChange("report")}
+        >
+          📊 리포트
+        </ViewButton>
+      </ViewSwitcher>
 
       <CharacterCreationModal
         isOpen={isModalOpen}

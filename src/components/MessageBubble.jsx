@@ -106,6 +106,7 @@ const SpeakButton = styled.button`
   ${animations}
 `;
 
+
 const LoadingBubble = styled(BubbleContainer)`
   background: ${colors.background.input};
   color: ${colors.text.message};

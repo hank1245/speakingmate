@@ -187,6 +187,129 @@ Return ONLY the suggested response text without any explanations or formatting.`
   }
 };
 
+
+export const analyzeConversationErrors = async (
+  conversationHistory = [],
+  contactName = "",
+  conversationDate = ""
+) => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file."
+    );
+  }
+
+  // Filter only user messages for analysis
+  const userMessages = conversationHistory.filter(msg => msg.isUser && msg.text && msg.text.trim());
+
+  if (userMessages.length === 0) {
+    return {
+      conversationInfo: {
+        contactName,
+        date: conversationDate,
+        totalUserMessages: 0
+      },
+      errors: [],
+      summary: "No user messages found in this conversation."
+    };
+  }
+
+  const messages = [
+    {
+      role: "system",
+      content: `You are an English grammar analysis assistant. Analyze the user's messages from a conversation for grammatical errors and language learning opportunities.
+
+Analyze the following user messages and provide a comprehensive report in this exact JSON format:
+{
+  "conversationInfo": {
+    "contactName": "${contactName}",
+    "date": "${conversationDate}",
+    "totalUserMessages": ${userMessages.length}
+  },
+  "errors": [
+    {
+      "messageText": "exact user message with error",
+      "errorType": "grammar|word_choice|sentence_structure|punctuation|spelling",
+      "errorDescription": "brief description of what's wrong",
+      "suggestion": "corrected version",
+      "explanation": "why this is better and learning tip",
+      "severity": "high|medium|low"
+    }
+  ],
+  "summary": "overall assessment of the user's English level and main areas for improvement"
+}
+
+Guidelines:
+- Only analyze user messages (not assistant responses)
+- Focus on errors that would help with learning
+- Ignore minor stylistic preferences
+- Prioritize grammar, word choice, and sentence structure issues
+- Be encouraging but specific about improvements
+- If no significant errors are found, return an empty errors array
+- Severity: high = affects meaning/comprehension, medium = grammatically incorrect but understandable, low = minor improvements`,
+    },
+    {
+      role: "user",
+      content: `Please analyze these user messages from a conversation:
+
+${userMessages.map((msg, index) => `Message ${index + 1}: "${msg.text}"`).join('\n')}`,
+    },
+  ];
+
+  const requestBody = {
+    model: "gpt-4o-mini",
+    messages: messages,
+    max_tokens: 800,
+    temperature: 0.2,
+  };
+
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI Conversation Analysis Error:", errorData);
+      throw new Error(`Conversation analysis failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error("No analysis received from OpenAI");
+    }
+
+    const responseText = data.choices[0].message.content.trim();
+    
+    try {
+      return JSON.parse(responseText);
+    } catch (parseError) {
+      console.error("Failed to parse conversation analysis response:", responseText);
+      // Return a fallback response if JSON parsing fails
+      return {
+        conversationInfo: {
+          contactName,
+          date: conversationDate,
+          totalUserMessages: userMessages.length
+        },
+        errors: [],
+        summary: "Analysis completed but response format was unexpected."
+      };
+    }
+  } catch (error) {
+    console.error("Error analyzing conversation:", error);
+    throw error;
+  }
+};
+
 export const correctGrammar = async (text) => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 

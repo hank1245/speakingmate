@@ -72,10 +72,9 @@ export const useSpeechRecognition = () => {
   // 변경점 3: startListening 로직 수정
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
-      // 시작 시, 현재 텍스트를 "확정된" 텍스트로 저장합니다. (뒤에 공백 추가)
-      committedTranscriptRef.current = transcript
-        ? transcript.trim() + " "
-        : "";
+      // 완전히 새로 시작하므로 이전 텍스트를 모두 초기화
+      committedTranscriptRef.current = "";
+      setTranscript("");
       setError(null);
 
       try {

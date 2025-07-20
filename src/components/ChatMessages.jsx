@@ -23,7 +23,18 @@ const EmptyState = styled.div`
 `;
 
 const ChatMessages = forwardRef(
-  ({ messages, contact, isLoading, onSpeak, ttsSupported, speaking }, ref) => {
+  (
+    {
+      messages,
+      contact,
+      isLoading,
+      onSpeak,
+      ttsSupported,
+      speaking,
+      onToggleCorrection,
+    },
+    ref
+  ) => {
     if (messages.length === 0) {
       return (
         <MessagesContainer ref={ref}>
@@ -47,6 +58,7 @@ const ChatMessages = forwardRef(
             onSpeak={onSpeak}
             ttsSupported={ttsSupported}
             speaking={speaking}
+            onToggleCorrection={onToggleCorrection}
           />
         ))}
 
@@ -56,6 +68,7 @@ const ChatMessages = forwardRef(
             isUser={false}
             ttsSupported={false}
             speaking={false}
+            onToggleCorrection={() => {}}
           />
         )}
       </MessagesContainer>

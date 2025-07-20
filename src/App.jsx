@@ -20,6 +20,7 @@ function App() {
     error: speechError,
     startListening,
     stopListening,
+    resetTranscript,
     isSupported: speechSupported,
   } = useSpeechRecognition();
 
@@ -27,24 +28,18 @@ function App() {
     currentChatId,
     currentContact,
     currentMessages,
-    inputText,
     isLoading,
-    setInputText,
-    handleSendMessage,
+    handleSpeechMessage,
     handleContactSelect,
     getLastMessage,
     handleCreateCharacter,
     handleToggleFavorite,
     isFavorite,
     organizedContacts,
+    toggleMessageCorrection,
   } = useChat(CHAT_CONTACTS);
 
-  // Handle speech recognition transcript
-  useEffect(() => {
-    if (transcript) {
-      setInputText(transcript);
-    }
-  }, [transcript, setInputText]);
+  // Handle speech recognition transcript - removed automatic input setting
 
   // Handle speech recognition errors
   useEffect(() => {
@@ -53,21 +48,21 @@ function App() {
     }
   }, [speechError]);
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSendMessage(ttsSupported ? speak : null);
-    }
-  };
-
   const handleMicClick = () => {
     if (isListening) {
-      // 듣고 있는 중(일시정지)일 때는 recognition만 멈춥니다.
+      // Stop recording and process the speech transcript
       stopListening();
+
+      // Process the transcript when stopping - now uses grammar correction
+      if (transcript && transcript.trim() && currentChatId) {
+        handleSpeechMessage(transcript.trim(), ttsSupported ? speak : null);
+        // Clear the transcript after processing
+        resetTranscript();
+      }
     } else {
-      // 멈춰있는 상태일 때는 recognition을 시작합니다.
+      // Start recording
       if (speechSupported) {
-        // resetTranscript(); // 필요하다면 이 부분은 남겨두거나, 사용자가 직접 지우도록 둘 수 있습니다.
-        // setInputText(""); // 위와 동일
+        resetTranscript(); // Clear any previous transcript completely
         startListening();
       } else {
         alert(ERROR_MESSAGES.SPEECH_NOT_SUPPORTED);
@@ -75,12 +70,13 @@ function App() {
     }
   };
 
-  const handleSend = () => {
-    handleSendMessage(ttsSupported ? speak : null);
-  };
-
-  const handleInputChange = (e) => {
-    setInputText(e.target.value);
+  const handleCancelClick = () => {
+    if (isListening) {
+      // Stop recording without processing
+      stopListening();
+      // Clear the transcript completely
+      resetTranscript();
+    }
   };
 
   return (
@@ -96,12 +92,9 @@ function App() {
       <ChatArea
         currentContact={currentContact}
         messages={currentMessages}
-        inputText={inputText}
         isLoading={isLoading}
-        onInputChange={handleInputChange}
-        onSend={handleSend}
-        onKeyPress={handleKeyPress}
         onMicClick={handleMicClick}
+        onCancelClick={handleCancelClick}
         onSpeak={speak}
         isListening={isListening}
         speechSupported={speechSupported}
@@ -109,6 +102,7 @@ function App() {
         speaking={speaking}
         onToggleFavorite={handleToggleFavorite}
         isFavorite={currentContact ? isFavorite(currentContact.id) : false}
+        onToggleCorrection={toggleMessageCorrection}
       />
     </AppContainer>
   );

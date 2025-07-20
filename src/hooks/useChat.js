@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { STORAGE_KEYS, ERROR_MESSAGES, UI_TEXT } from "../constants/strings";
-import { sendMessageToOpenAI } from "../services/openai";
+import { sendMessageToOpenAI, correctGrammar } from "../services/openai";
 
 export function useChat(initialContacts) {
   const [currentChatId, setCurrentChatId] = useState(null);
   const [allChats, setAllChats] = useState({});
-  const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [contacts, setContacts] = useState(initialContacts);
   const [favorites, setFavorites] = useState([]);
@@ -52,7 +51,12 @@ export function useChat(initialContacts) {
     return currentChatId ? allChats[currentChatId] || [] : [];
   };
 
-  const addMessage = (text, isUser = false) => {
+  const addMessage = (
+    text,
+    isUser = false,
+    originalText = null,
+    correctedText = null
+  ) => {
     if (!currentChatId) return;
 
     const newMessage = {
@@ -60,6 +64,9 @@ export function useChat(initialContacts) {
       text,
       isUser,
       timestamp: new Date().toISOString(),
+      originalText,
+      correctedText,
+      isShowingCorrected: false, // Track which version is currently displayed
     };
 
     setAllChats((prev) => ({
@@ -73,19 +80,28 @@ export function useChat(initialContacts) {
     return contact ? contact.personality : "";
   };
 
-  const handleSendMessage = async (speak) => {
-    if (!inputText.trim() || isLoading || !currentChatId) return;
+  const handleSpeechMessage = async (speechText, speak) => {
+    if (!speechText.trim() || isLoading || !currentChatId) return;
 
-    const userMessage = inputText.trim();
-    setInputText("");
-    addMessage(userMessage, true);
     setIsLoading(true);
 
     try {
+      // First, correct the grammar of the speech transcript
+      const grammarResult = await correctGrammar(speechText.trim());
+
+      // Add the message with both original and corrected versions
+      addMessage(
+        grammarResult.original, // Display the punctuation-corrected version first
+        true,
+        grammarResult.original, // Original with punctuation
+        grammarResult.corrected // Grammar-corrected version (null if no corrections needed)
+      );
+
+      // Then get AI response using the original punctuation-corrected text
       const currentMessages = getCurrentMessages();
       const personalityPrompt = getPersonalityPrompt(currentChatId);
       const aiResponse = await sendMessageToOpenAI(
-        userMessage,
+        grammarResult.original,
         currentMessages,
         personalityPrompt
       );
@@ -96,7 +112,7 @@ export function useChat(initialContacts) {
         setTimeout(() => speak(aiResponse), 500);
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error processing speech message:", error);
       let errorMessage = ERROR_MESSAGES.GENERIC;
 
       if (error.message.includes("API key")) {
@@ -119,8 +135,8 @@ export function useChat(initialContacts) {
     const messages = allChats[chatId];
     if (!messages || messages.length === 0) return UI_TEXT.NO_MESSAGES_YET;
     const lastMessage = messages[messages.length - 1];
-    return lastMessage.text.length > 50
-      ? lastMessage.text.substring(0, 50) + "..."
+    return lastMessage.text.length > 30
+      ? lastMessage.text.substring(0, 30) + "..."
       : lastMessage.text;
   };
 
@@ -150,6 +166,27 @@ export function useChat(initialContacts) {
 
   const isFavorite = (contactId) => {
     return favorites.includes(contactId);
+  };
+
+  const toggleMessageCorrection = (messageId) => {
+    if (!currentChatId) return;
+
+    setAllChats((prev) => ({
+      ...prev,
+      [currentChatId]: prev[currentChatId].map((message) => {
+        if (message.id === messageId && message.correctedText) {
+          const isCurrentlyShowingCorrected = message.isShowingCorrected;
+          return {
+            ...message,
+            text: isCurrentlyShowingCorrected
+              ? message.originalText
+              : message.correctedText,
+            isShowingCorrected: !isCurrentlyShowingCorrected,
+          };
+        }
+        return message;
+      }),
+    }));
   };
 
   // Organize contacts by favorites, default characters, and custom characters
@@ -183,17 +220,16 @@ export function useChat(initialContacts) {
     currentContact,
     currentMessages,
     allChats,
-    inputText,
     isLoading,
     contacts,
     favorites,
-    setInputText,
-    handleSendMessage,
+    handleSpeechMessage,
     handleContactSelect,
     getLastMessage,
     handleCreateCharacter,
     handleToggleFavorite,
     isFavorite,
     organizedContacts,
+    toggleMessageCorrection,
   };
 }

@@ -93,3 +93,73 @@ Guidelines:
     throw error;
   }
 };
+
+export const correctGrammar = async (text) => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file."
+    );
+  }
+
+  const messages = [
+    {
+      role: "system",
+      content:
+        "You are a grammar correction assistant. For the given text, provide two versions:\n1. First, add only proper punctuation (periods, question marks, etc.) to complete the sentence without changing grammar\n2. Second, if there are any grammar mistakes, provide a grammatically corrected version\n\nFormat your response as:\n[First sentence with punctuation]\n#\n[Second sentence with grammar corrections]\n\nIf there are no grammar mistakes needed, return only the first sentence (with punctuation) without the # separator. Return ONLY the corrected text without any explanations or additional comments.",
+    },
+    {
+      role: "user",
+      content: text,
+    },
+  ];
+
+  const requestBody = {
+    model: "gpt-4o-mini",
+    messages: messages,
+    max_tokens: 150,
+    temperature: 0.1,
+  };
+
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI Grammar Correction Error:", errorData);
+      // If grammar correction fails, return original text
+      return { original: text, corrected: null };
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || data.choices.length === 0) {
+      return { original: text, corrected: null };
+    }
+
+    const responseText = data.choices[0].message.content.trim();
+
+    // Parse the response
+    if (responseText.includes("#")) {
+      const [original, corrected] = responseText
+        .split("#")
+        .map((s) => s.trim());
+      return { original, corrected };
+    } else {
+      // No grammar corrections needed
+      return { original: responseText, corrected: null };
+    }
+  } catch (error) {
+    console.error("Error correcting grammar:", error);
+    // If error occurs, return original text
+    return { original: text, corrected: null };
+  }
+};

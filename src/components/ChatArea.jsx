@@ -16,12 +16,9 @@ const ChatContainer = styled.div`
 function ChatArea({
   currentContact,
   messages,
-  inputText,
   isLoading,
-  onInputChange,
-  onSend,
-  onKeyPress,
   onMicClick,
+  onCancelClick,
   onSpeak,
   isListening,
   speechSupported,
@@ -29,6 +26,7 @@ function ChatArea({
   speaking,
   onToggleFavorite,
   isFavorite,
+  onToggleCorrection,
 }) {
   const chatContainerRef = useRef(null);
 
@@ -64,18 +62,15 @@ function ChatArea({
         onSpeak={onSpeak}
         ttsSupported={ttsSupported}
         speaking={speaking}
+        onToggleCorrection={onToggleCorrection}
       />
 
       <ChatInput
-        inputText={inputText}
-        onInputChange={onInputChange}
-        onKeyPress={onKeyPress}
-        onSend={onSend}
         onMicClick={onMicClick}
+        onCancelClick={onCancelClick}
         isLoading={isLoading}
         isListening={isListening}
         speechSupported={speechSupported}
-        contact={currentContact}
       />
     </ChatContainer>
   );

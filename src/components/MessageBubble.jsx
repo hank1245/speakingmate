@@ -2,10 +2,28 @@ import styled from "styled-components";
 import { colors, animations } from "../styles/common";
 import { UI_TEXT } from "../constants/strings";
 
+const MessageContainer = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 10px 0;
+
+  ${(props) =>
+    props.isUser
+      ? `
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+  `
+      : `
+    justify-content: flex-start;
+    flex-direction: row;
+  `}
+`;
+
 const BubbleContainer = styled.div`
+  width: fit-content;
   max-width: 70%;
   padding: 12px 16px;
-  margin: 10px 0;
   border-radius: 18px;
   word-wrap: break-word;
   position: relative;
@@ -15,14 +33,39 @@ const BubbleContainer = styled.div`
       ? `
     background: ${colors.primary};
     color: ${colors.text.primary};
-    margin-left: auto;
     text-align: right;
   `
       : `
     background: ${colors.background.input};
     color: ${colors.text.message};
-    margin-right: auto;
   `}
+`;
+
+const CorrectionButton = styled.button`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  color: ${(props) => (props.isShowingCorrected ? colors.success : "#ff9800")};
+
+  &:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 `;
 
 const SpeakButton = styled.button`
@@ -63,7 +106,6 @@ const SpeakButton = styled.button`
 const LoadingBubble = styled(BubbleContainer)`
   background: ${colors.background.input};
   color: ${colors.text.message};
-  margin-right: auto;
 
   .loading-content {
     display: flex;
@@ -78,31 +120,58 @@ const LoadingBubble = styled(BubbleContainer)`
   ${animations}
 `;
 
-function MessageBubble({ message, isUser, onSpeak, ttsSupported, speaking }) {
+function MessageBubble({
+  message,
+  isUser,
+  onSpeak,
+  ttsSupported,
+  speaking,
+  onToggleCorrection,
+}) {
   if (message.isLoading) {
     return (
-      <LoadingBubble>
-        <div className="loading-content">
-          <span>{UI_TEXT.THINKING}</span>
-          <span className="dots">...</span>
-        </div>
-      </LoadingBubble>
+      <MessageContainer>
+        <LoadingBubble>
+          <div className="loading-content">
+            <span>{UI_TEXT.THINKING}</span>
+            <span className="dots">...</span>
+          </div>
+        </LoadingBubble>
+      </MessageContainer>
     );
   }
 
+  const hasCorrection = message.correctedText && isUser;
+
   return (
-    <BubbleContainer isUser={isUser}>
-      {message.text}
-      {!isUser && ttsSupported && (
-        <SpeakButton
-          onClick={() => onSpeak(message.text)}
-          speaking={speaking}
-          title={UI_TEXT.BUTTON_TITLES.READ_ALOUD}
+    <MessageContainer isUser={isUser}>
+      {hasCorrection && (
+        <CorrectionButton
+          onClick={() => onToggleCorrection(message.id)}
+          isShowingCorrected={message.isShowingCorrected}
+          title={
+            message.isShowingCorrected
+              ? "Show original message"
+              : "Show grammar correction"
+          }
         >
-          🔊
-        </SpeakButton>
+          {message.isShowingCorrected ? "↩️" : "⚠️"}
+        </CorrectionButton>
       )}
-    </BubbleContainer>
+
+      <BubbleContainer isUser={isUser}>
+        {message.text}
+        {!isUser && ttsSupported && (
+          <SpeakButton
+            onClick={() => onSpeak(message.text)}
+            speaking={speaking}
+            title={UI_TEXT.BUTTON_TITLES.READ_ALOUD}
+          >
+            🔊
+          </SpeakButton>
+        )}
+      </BubbleContainer>
+    </MessageContainer>
   );
 }
 

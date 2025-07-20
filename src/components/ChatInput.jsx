@@ -4,60 +4,57 @@ import { UI_TEXT } from "../constants/strings";
 
 const InputContainer = styled.div`
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   background: ${colors.background.input};
   padding: 15px 20px;
   border-top: 1px solid ${colors.border};
-`;
-
-const TextInput = styled.input`
-  flex: 1;
-  border: none;
-  outline: none;
-  padding: 12px 16px;
-  font-size: 16px;
-  border-radius: 24px;
-  background: ${colors.background.inputField};
-  color: ${colors.text.primary};
-
-  &::placeholder {
-    color: ${colors.text.muted};
-  }
 `;
 
 const MicButton = styled(CircularButton)`
   background: ${(props) =>
     props.isRecording ? colors.danger : colors.primary};
   color: ${colors.text.primary};
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
 `;
 
-const SendButton = styled(CircularButton)`
-  background: ${colors.primary};
-  color: ${colors.text.primary};
+const CancelButton = styled(CircularButton)`
+  background: ${colors.background.hover};
+  color: ${colors.text.muted};
+  width: 45px;
+  height: 45px;
+  font-size: 20px;
+  border: 2px solid ${colors.border};
+
+  &:hover:not(:disabled) {
+    background: ${colors.background.active};
+    color: ${colors.text.primary};
+    border-color: ${colors.text.muted};
+  }
 `;
 
 function ChatInput({
-  inputText,
-  onInputChange,
-  onKeyPress,
-  onSend,
   onMicClick,
+  onCancelClick,
   isLoading,
   isListening,
   speechSupported,
-  contact,
 }) {
   return (
     <InputContainer>
-      <TextInput
-        type="text"
-        value={inputText}
-        onChange={onInputChange}
-        onKeyDown={onKeyPress}
-        placeholder={`${UI_TEXT.PLACEHOLDER_MESSAGE} ${contact?.name}...`}
-        disabled={isLoading}
-      />
+      {isListening && (
+        <CancelButton
+          onClick={onCancelClick}
+          title="Cancel recording"
+          disabled={isLoading}
+        >
+          ✕
+        </CancelButton>
+      )}
+
       <MicButton
         onClick={onMicClick}
         isRecording={isListening}
@@ -66,17 +63,10 @@ function ChatInput({
             ? UI_TEXT.BUTTON_TITLES.STOP_RECORDING
             : UI_TEXT.BUTTON_TITLES.START_RECORDING
         }
-        disabled={!speechSupported}
+        disabled={!speechSupported || isLoading}
       >
         {isListening ? "🔴" : "🎤"}
       </MicButton>
-      <SendButton
-        onClick={onSend}
-        disabled={!inputText.trim() || isLoading}
-        title={UI_TEXT.BUTTON_TITLES.SEND_MESSAGE}
-      >
-        ✈️
-      </SendButton>
     </InputContainer>
   );
 }

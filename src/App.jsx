@@ -20,7 +20,6 @@ function App() {
     error: speechError,
     startListening,
     stopListening,
-    resetTranscript,
     isSupported: speechSupported,
   } = useSpeechRecognition();
 
@@ -62,17 +61,13 @@ function App() {
 
   const handleMicClick = () => {
     if (isListening) {
+      // 듣고 있는 중(일시정지)일 때는 recognition만 멈춥니다.
       stopListening();
-      if (transcript.trim()) {
-        setTimeout(() => {
-          handleSendMessage(ttsSupported ? speak : null);
-          resetTranscript();
-        }, 100);
-      }
     } else {
+      // 멈춰있는 상태일 때는 recognition을 시작합니다.
       if (speechSupported) {
-        resetTranscript();
-        setInputText("");
+        // resetTranscript(); // 필요하다면 이 부분은 남겨두거나, 사용자가 직접 지우도록 둘 수 있습니다.
+        // setInputText(""); // 위와 동일
         startListening();
       } else {
         alert(ERROR_MESSAGES.SPEECH_NOT_SUPPORTED);

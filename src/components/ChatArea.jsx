@@ -27,6 +27,8 @@ function ChatArea({
   speechSupported,
   ttsSupported,
   speaking,
+  onToggleFavorite,
+  isFavorite,
 }) {
   const chatContainerRef = useRef(null);
 
@@ -48,7 +50,11 @@ function ChatArea({
 
   return (
     <ChatContainer>
-      <ChatHeader contact={currentContact} />
+      <ChatHeader
+        contact={currentContact}
+        onToggleFavorite={onToggleFavorite}
+        isFavorite={isFavorite}
+      />
 
       <ChatMessages
         ref={chatContainerRef}

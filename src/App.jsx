@@ -30,12 +30,14 @@ function App() {
     currentMessages,
     inputText,
     isLoading,
-    contacts,
     setInputText,
     handleSendMessage,
     handleContactSelect,
     getLastMessage,
     handleCreateCharacter,
+    handleToggleFavorite,
+    isFavorite,
+    organizedContacts,
   } = useChat(CHAT_CONTACTS);
 
   // Handle speech recognition transcript
@@ -89,11 +91,11 @@ function App() {
   return (
     <AppContainer>
       <Sidebar
-        contacts={contacts}
         currentChatId={currentChatId}
         onContactSelect={handleContactSelect}
         getLastMessage={getLastMessage}
         onCreateCharacter={handleCreateCharacter}
+        organizedContacts={organizedContacts}
       />
 
       <ChatArea
@@ -110,6 +112,8 @@ function App() {
         speechSupported={speechSupported}
         ttsSupported={ttsSupported}
         speaking={speaking}
+        onToggleFavorite={handleToggleFavorite}
+        isFavorite={currentContact ? isFavorite(currentContact.id) : false}
       />
     </AppContainer>
   );

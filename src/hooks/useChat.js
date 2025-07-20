@@ -8,6 +8,7 @@ export function useChat(initialContacts) {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [contacts, setContacts] = useState(initialContacts);
+  const [favorites, setFavorites] = useState([]);
 
   // Load all conversation histories and custom contacts from localStorage on mount
   useEffect(() => {
@@ -21,6 +22,11 @@ export function useChat(initialContacts) {
       const customContacts = JSON.parse(savedContacts);
       setContacts([...initialContacts, ...customContacts]);
     }
+
+    const savedFavorites = localStorage.getItem(STORAGE_KEYS.FAVORITES);
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
   }, [initialContacts]);
 
   // Save all chats to localStorage whenever allChats change
@@ -30,6 +36,11 @@ export function useChat(initialContacts) {
       JSON.stringify(allChats)
     );
   }, [allChats]);
+
+  // Save favorites to localStorage whenever favorites change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
+  }, [favorites]);
 
   const getCurrentMessages = () => {
     return currentChatId ? allChats[currentChatId] || [] : [];
@@ -121,6 +132,43 @@ export function useChat(initialContacts) {
     );
   };
 
+  const handleToggleFavorite = (contactId) => {
+    setFavorites((prev) => {
+      if (prev.includes(contactId)) {
+        return prev.filter((id) => id !== contactId);
+      } else {
+        return [...prev, contactId];
+      }
+    });
+  };
+
+  const isFavorite = (contactId) => {
+    return favorites.includes(contactId);
+  };
+
+  // Organize contacts by favorites, default characters, and custom characters
+  const organizedContacts = () => {
+    const favoriteContacts = contacts.filter((contact) =>
+      favorites.includes(contact.id)
+    );
+    const defaultContacts = contacts.filter((contact) =>
+      initialContacts.find((initial) => initial.id === contact.id)
+    );
+    const customContacts = contacts.filter(
+      (contact) => !initialContacts.find((initial) => initial.id === contact.id)
+    );
+
+    return {
+      favorites: favoriteContacts,
+      default: defaultContacts.filter(
+        (contact) => !favorites.includes(contact.id)
+      ),
+      custom: customContacts.filter(
+        (contact) => !favorites.includes(contact.id)
+      ),
+    };
+  };
+
   const currentContact = contacts.find((c) => c.id === currentChatId);
   const currentMessages = getCurrentMessages();
 
@@ -132,10 +180,14 @@ export function useChat(initialContacts) {
     inputText,
     isLoading,
     contacts,
+    favorites,
     setInputText,
     handleSendMessage,
     handleContactSelect,
     getLastMessage,
     handleCreateCharacter,
+    handleToggleFavorite,
+    isFavorite,
+    organizedContacts,
   };
 }

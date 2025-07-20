@@ -1,11 +1,17 @@
 import styled from "styled-components";
-import { colors } from "../styles/common";
+import { colors, CircularButton } from "../styles/common";
 import { UI_TEXT } from "../constants/strings";
 
 const HeaderContainer = styled.div`
   padding: 15px 20px;
   background: ${colors.background.header};
   border-bottom: 1px solid ${colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ContactInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
@@ -37,16 +43,45 @@ const HeaderContainer = styled.div`
   }
 `;
 
-function ChatHeader({ contact }) {
+const FavoriteButton = styled(CircularButton)`
+  background: transparent;
+  color: ${(props) => (props.isFavorite ? "#ff6b6b" : colors.text.muted)};
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+
+  &:hover:not(:disabled) {
+    background: ${colors.background.hover};
+    color: ${(props) => (props.isFavorite ? "#ff4757" : "#ff6b6b")};
+  }
+`;
+
+function ChatHeader({ contact, onToggleFavorite, isFavorite }) {
   if (!contact) return null;
 
+  const handleFavoriteClick = () => {
+    if (onToggleFavorite) {
+      onToggleFavorite(contact.id);
+    }
+  };
+
   return (
-    <HeaderContainer color={contact.color}>
-      <div className="avatar">{contact.avatar}</div>
-      <div className="info">
-        <div className="name">{contact.name}</div>
-        <div className="status">{UI_TEXT.STATUS_ONLINE}</div>
-      </div>
+    <HeaderContainer>
+      <ContactInfo color={contact.color}>
+        <div className="avatar">{contact.avatar}</div>
+        <div className="info">
+          <div className="name">{contact.name}</div>
+          <div className="status">{UI_TEXT.STATUS_ONLINE}</div>
+        </div>
+      </ContactInfo>
+
+      <FavoriteButton
+        isFavorite={isFavorite}
+        onClick={handleFavoriteClick}
+        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
+        {isFavorite ? "♥" : "♡"}
+      </FavoriteButton>
     </HeaderContainer>
   );
 }

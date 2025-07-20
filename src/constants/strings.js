@@ -2,6 +2,7 @@
 export const STORAGE_KEYS = {
   ALL_CHAT_MESSAGES: "allChatMessages",
   CUSTOM_CONTACTS: "customContacts",
+  FAVORITES: "favorites",
 };
 
 // Error messages

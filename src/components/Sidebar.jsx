@@ -39,6 +39,25 @@ const ContactsList = styled.div`
   padding: 10px 0;
 `;
 
+const SectionHeader = styled.div`
+  padding: 12px 20px 8px 20px;
+  color: ${colors.text.secondary};
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: ${colors.background.sidebar};
+  position: sticky;
+  top: 0;
+  z-index: 1;
+`;
+
+const SectionDivider = styled.div`
+  height: 1px;
+  background: ${colors.border};
+  margin: 8px 20px;
+`;
+
 const ContactItem = styled.div.withConfig({
   shouldForwardProp: (prop) => prop !== "active",
 })`
@@ -137,11 +156,11 @@ const AddCharacterButton = styled.div`
 `;
 
 function Sidebar({
-  contacts,
   currentChatId,
   onContactSelect,
   getLastMessage,
   onCreateCharacter,
+  organizedContacts,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -149,6 +168,27 @@ function Sidebar({
     onCreateCharacter(newCharacter);
     setIsModalOpen(false);
   };
+
+  const {
+    favorites,
+    default: defaultContacts,
+    custom: customContacts,
+  } = organizedContacts();
+
+  const renderContactItem = (contact) => (
+    <ContactItem
+      key={contact.id}
+      active={currentChatId === contact.id}
+      color={contact.color}
+      onClick={() => onContactSelect(contact.id)}
+    >
+      <div className="avatar">{contact.avatar}</div>
+      <div className="info">
+        <div className="name">{contact.name}</div>
+        <div className="last-message">{getLastMessage(contact.id)}</div>
+      </div>
+    </ContactItem>
+  );
 
   return (
     <SidebarContainer>
@@ -158,20 +198,28 @@ function Sidebar({
       </SidebarHeader>
 
       <ContactsList>
-        {contacts.map((contact) => (
-          <ContactItem
-            key={contact.id}
-            active={currentChatId === contact.id}
-            color={contact.color}
-            onClick={() => onContactSelect(contact.id)}
-          >
-            <div className="avatar">{contact.avatar}</div>
-            <div className="info">
-              <div className="name">{contact.name}</div>
-              <div className="last-message">{getLastMessage(contact.id)}</div>
-            </div>
-          </ContactItem>
-        ))}
+        {favorites.length > 0 && (
+          <>
+            <SectionHeader>Favorite Characters</SectionHeader>
+            {favorites.map(renderContactItem)}
+            <SectionDivider />
+          </>
+        )}
+
+        {defaultContacts.length > 0 && (
+          <>
+            <SectionHeader>Default Characters</SectionHeader>
+            {defaultContacts.map(renderContactItem)}
+          </>
+        )}
+
+        {customContacts.length > 0 && (
+          <>
+            {defaultContacts.length > 0 && <SectionDivider />}
+            <SectionHeader>My Characters</SectionHeader>
+            {customContacts.map(renderContactItem)}
+          </>
+        )}
 
         <AddCharacterButton onClick={() => setIsModalOpen(true)}>
           <div className="icon">+</div>

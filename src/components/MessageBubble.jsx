@@ -36,7 +36,20 @@ const BubbleContainer = styled.div`
       : `
     background: ${colors.background.input};
     color: ${colors.text.message};
+    opacity: 0;
+    animation: fadeInBubble 0.6s ease-out forwards;
   `}
+
+  @keyframes fadeInBubble {
+    from {
+      opacity: 0;
+      transform: translateY(15px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 `;
 
 const CorrectionButton = styled.button`
@@ -106,10 +119,11 @@ const SpeakButton = styled.button`
   ${animations}
 `;
 
-
 const LoadingBubble = styled(BubbleContainer)`
   background: ${colors.background.input};
   color: ${colors.text.message};
+  opacity: 0;
+  animation: fadeInDelayed 1.5s ease-in-out 1s forwards;
 
   .loading-content {
     display: flex;
@@ -118,7 +132,47 @@ const LoadingBubble = styled(BubbleContainer)`
   }
 
   .dots {
-    animation: blink 1.4s infinite;
+    animation: blink 1.4s infinite 1s;
+  }
+
+  @keyframes fadeInDelayed {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  ${animations}
+`;
+
+const StopButton = styled.button`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 4px;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  color: ${colors.text.message};
+
+  &:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   ${animations}
@@ -128,6 +182,7 @@ function MessageBubble({
   message,
   isUser,
   onSpeak,
+  onStopSpeak,
   ttsSupported,
   speaking,
   onToggleCorrection,
@@ -165,13 +220,20 @@ function MessageBubble({
         )}
         {message.text}
         {!isUser && ttsSupported && (
-          <SpeakButton
-            onClick={() => onSpeak(message.text)}
-            speaking={speaking}
-            title={UI_TEXT.BUTTON_TITLES.READ_ALOUD}
-          >
-            🔊
-          </SpeakButton>
+          <>
+            <SpeakButton
+              onClick={() => onSpeak(message.text)}
+              speaking={speaking}
+              title={UI_TEXT.BUTTON_TITLES.READ_ALOUD}
+            >
+              🔊
+            </SpeakButton>
+            {speaking && (
+              <StopButton onClick={onStopSpeak} title="Stop reading">
+                ⏹️
+              </StopButton>
+            )}
+          </>
         )}
       </BubbleContainer>
     </MessageContainer>

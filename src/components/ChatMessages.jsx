@@ -29,6 +29,7 @@ const ChatMessages = forwardRef(
       contact,
       isLoading,
       onSpeak,
+      onStopSpeak,
       ttsSupported,
       speaking,
       onToggleCorrection,
@@ -56,6 +57,7 @@ const ChatMessages = forwardRef(
             message={message}
             isUser={message.isUser}
             onSpeak={onSpeak}
+            onStopSpeak={onStopSpeak}
             ttsSupported={ttsSupported}
             speaking={speaking}
             onToggleCorrection={onToggleCorrection}
@@ -66,6 +68,7 @@ const ChatMessages = forwardRef(
           <MessageBubble
             message={{ isLoading: true }}
             isUser={false}
+            onStopSpeak={onStopSpeak}
             ttsSupported={false}
             speaking={false}
             onToggleCorrection={() => {}}

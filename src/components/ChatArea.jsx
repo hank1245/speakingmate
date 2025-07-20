@@ -14,7 +14,7 @@ const ChatContainer = styled.div`
 `;
 
 const SuggestionContainer = styled.div`
-  display: ${props => props.show ? 'block' : 'none'};
+  display: ${(props) => (props.show ? "block" : "none")};
   padding: 15px 20px;
   background: ${colors.background.input};
   border-top: 1px solid ${colors.border};
@@ -24,8 +24,14 @@ const SuggestionContainer = styled.div`
   animation: fadeIn 0.3s ease-in;
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 `;
 
@@ -37,6 +43,7 @@ function ChatArea({
   onCancelClick,
   onHelpClick,
   onSpeak,
+  onStopSpeak,
   isListening,
   speechSupported,
   ttsSupported,
@@ -79,14 +86,13 @@ function ChatArea({
         contact={currentContact}
         isLoading={isLoading}
         onSpeak={onSpeak}
+        onStopSpeak={onStopSpeak}
         ttsSupported={ttsSupported}
         speaking={speaking}
         onToggleCorrection={onToggleCorrection}
       />
 
-      <SuggestionContainer show={suggestion}>
-        {suggestion}
-      </SuggestionContainer>
+      <SuggestionContainer show={suggestion}>{suggestion}</SuggestionContainer>
 
       <ChatInput
         onMicClick={onMicClick}

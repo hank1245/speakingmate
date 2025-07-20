@@ -18,8 +18,13 @@ function App() {
   const [currentView, setCurrentView] = useState("chat"); // "chat" or "report"
   const [suggestion, setSuggestion] = useState("");
   const [isGettingHelp, setIsGettingHelp] = useState(false);
-  
-  const { speak, speaking, isSupported: ttsSupported } = useSpeechSynthesis();
+
+  const {
+    speak,
+    stop: stopSpeak,
+    speaking,
+    isSupported: ttsSupported,
+  } = useSpeechSynthesis();
   const {
     isListening,
     transcript,
@@ -128,6 +133,7 @@ function App() {
           onCancelClick={handleCancelClick}
           onHelpClick={handleHelpClick}
           onSpeak={speak}
+          onStopSpeak={stopSpeak}
           isListening={isListening}
           speechSupported={speechSupported}
           ttsSupported={ttsSupported}

@@ -17,7 +17,7 @@ export const ERROR_MESSAGES = {
 // UI Text
 export const UI_TEXT = {
   APP_NAME: "SpeakingMate",
-  APP_SUBTITLE: "English Speaking Practice",
+  APP_SUBTITLE: "English Speaking App",
   WELCOME_MESSAGE: "Welcome,",
   WELCOME_ADMIN: "admin",
   WELCOME_SUBTITLE: "Please select a chat to start messaging.",

@@ -14,7 +14,9 @@ export function useChat(initialContacts) {
   useEffect(() => {
     const savedChats = localStorage.getItem(STORAGE_KEYS.ALL_CHAT_MESSAGES);
     if (savedChats) {
-      setAllChats(JSON.parse(savedChats));
+      const parsedChats = JSON.parse(savedChats);
+      console.log("Loaded chats from localStorage:", parsedChats);
+      setAllChats(parsedChats);
     }
 
     const savedContacts = localStorage.getItem(STORAGE_KEYS.CUSTOM_CONTACTS);
@@ -31,10 +33,14 @@ export function useChat(initialContacts) {
 
   // Save all chats to localStorage whenever allChats change
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.ALL_CHAT_MESSAGES,
-      JSON.stringify(allChats)
-    );
+    // Only save if allChats has content (not empty object)
+    if (Object.keys(allChats).length > 0) {
+      console.log("Saving chats to localStorage:", allChats);
+      localStorage.setItem(
+        STORAGE_KEYS.ALL_CHAT_MESSAGES,
+        JSON.stringify(allChats)
+      );
+    }
   }, [allChats]);
 
   // Save favorites to localStorage whenever favorites change
